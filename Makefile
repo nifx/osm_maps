@@ -1,10 +1,15 @@
 #!/bin/bash
 
-SPLITTER=java -Xmx1500m -jar /home/nico/Development/osm/splitter/splitter-r299/splitter.jar
-MKGMAP=java -Xmx1500m -jar /home/nico/Development/osm/mkgmap/mkgmap-r2540/mkgmap.jar
-OSMOSIS=/home/nico/Development/osm/osmosis/bin/osmosis
-OSMFILTER=/home/nico/Development/osm/osmfilter/osmfilter32
-OSMCONVERT=/home/nico/Development/osm/osmconvert/osmconvert32
+# save working directory
+HOME=$(PWD)
+
+# tools
+SPLITTER=$(HOME)/tools/splitter/splitter.jar
+MKGMAP=$(HOME)/tools/mkgmap/mkgmap.jar
+OSMOSIS=$(HOME)/tools/osmosis/bin/osmosis
+OSMFILTER=$(HOME)/tools/osmfilter/osmfilter32
+OSMCONVERT=$(HOME)/tools/osmconvert/osmconvert32
+
 
 INPUT_TEST=/home/nico/Development/osm/osm_pbf/bayern-latest.osm.pbf
 INPUT_EUROPE=/home/nico/Development/osm/nif_osm_maps/dach++.osm.pbf
@@ -37,11 +42,11 @@ bounds:
 	pushd tmp ; \
 	mkdir -p bounds; \
 	pushd bounds; \
-	#$(OSMCONVERT) $(INPUT_EUROPE) --out-o5m >temp.o5m ; \
-	#$(OSMFILTER) temp.o5m --keep-nodes= \
-	#--keep-ways-relations="boundary=administrative =postal_code postal_code=" \
-	#--out-o5m > temp-boundaries.o5m ; \
-	java -cp /home/nico/Development/osm/mkgmap/mkgmap-r2540/mkgmap.jar \
+	$(OSMCONVERT) $(INPUT_EUROPE) --out-o5m >temp.o5m ; \
+	$(OSMFILTER) temp.o5m --keep-nodes= \
+	--keep-ways-relations="boundary=administrative =postal_code postal_code=" \
+	--out-o5m > temp-boundaries.o5m ; \
+	java -cp $(MKGMAP) \
 	uk.me.parabola.mkgmap.reader.osm.boundary.BoundaryPreprocessor \
 	temp-boundaries.o5m \
 	temp_bounds; \
@@ -54,7 +59,7 @@ osmosis:
 
 splitter:
 	pushd tmp ; \
-	$(SPLITTER) --cache=./tmp --output=xml --max-nodes=800000 $(INPUT) ; \
+	java -Xmx1500m -jar $(SPLITTER) --cache=./tmp --output=xml --max-nodes=800000 $(INPUT) ; \
 	popd; \
 
 # Teddy:
@@ -67,7 +72,7 @@ splitter:
 #/home/nico/Development/osm/bounds_20130420
 mkgmap:
 	pushd tmp ; \
-	$(MKGMAP) \
+	java -Xmx1500m -jar $(MKGMAP) \
 	--keep-going \
 	--family-id=$(FAMILY_ID) \
 	--style-file=$(STYLE_FILE) \

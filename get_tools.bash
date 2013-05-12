@@ -1,5 +1,9 @@
 #!/bin/bash
 
+mkdir -p tools
+pushd tools
+rm -rf *
+
 ##############################################################################
 # osmosis
 ##############################################################################
@@ -57,4 +61,6 @@ tar xvfz $FILENAME.tar.gz
 rm $FILENAME.tar.gz
 mv $FILENAME/* .
 rm -rf $FILENAME
+popd
+
 popd
