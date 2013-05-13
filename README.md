@@ -47,3 +47,7 @@ Next steps:
 - improve Makefile to be more independant (directories, etc.)
 - find a way to cut a region out of a bigger osm file
 - self generated boundaries
+
+
+To use gpx2png, several perl modules are necessary. For example to install
+Math::Trig, simply try: cpan install Math::Trig

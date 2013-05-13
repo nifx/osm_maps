@@ -10,26 +10,22 @@ OSMOSIS=$(HOME)/tools/osmosis/bin/osmosis
 OSMFILTER=$(HOME)/tools/osmfilter/osmfilter32
 OSMCONVERT=$(HOME)/tools/osmconvert/osmconvert32
 
+# style and typ file
+STYLE_FILE=$(HOME)/tools/teddy/teddy
+TYP_FILE=$(HOME)/tools/teddy/teddy.TYP
+FAMILY_ID=42
+
+# polygons
+#POLYFILE=$(HOME)/poly/germany_czech-republic_austria_switzerland_italy_liechtenstein.poly
+#POLYFILE=$(HOME)/poly/germany_france_portugal_spain_andorra_belgium_luxembourg_monaco_netherlands.poly
+POLYFILE=$(HOME)/poly/illinois_wisconsin_michigan_new-york_ontario_indiana_new-jersey_ohio_pennsylvania.poly
+
 
 INPUT_TEST=/home/nico/Development/osm/osm_pbf/bayern-latest.osm.pbf
 INPUT_EUROPE=/home/nico/Development/osm/nif_osm_maps/dach++.osm.pbf
 INPUT=$(INPUT_EUROPE)
 
 INPUT_SPLITTER=/home/nico/Development/osm/osm_pbf/06052013/europe-latest.osm.pbf
-
-
-POLYFILE=/home/nico/Development/osm/poly/geofabrik/europe/d_cz_a_ch_i.poly
-
-STYLE_FILE=/home/nico/Development/osm/computerteddy/OSM_sicherung_gauss_130425/teddy
-#STYLE_FILE=/home/nico/Development/osm/computerteddy/OSM_sicherung_gauss_130425/teddy.heiko
-#STYLE_FILE=/home/nico/Development/osm/own_stuff/styles/test_style
-#STYLE_FILE=/home/nico/Development/osm/own_stuff3/styles/basemap_style
-#STYLE_FILE=/home/nico/Development/osm/test1/aiostyles/basemap_style
-
-TYP_FILE=/home/nico/Development/osm/computerteddy/OSM_sicherung_gauss_130425/teddy.TYP
-FAMILY_ID=42
-#TYP_FILE=/home/nico/Development/osm/test1/aiostyles/basemap.TYP
-#FAMILY_ID=4
 
 
 all: tmp osmosis splitter mkgmap
@@ -95,3 +91,11 @@ mkgmap:
 	--name-tag-list='name:de,name,name:latin,name:en' \
 	*.osm.gz $(TYP_FILE) ; \
 	popd; \
+
+png:
+	pushd tmp ; \
+	perl $(HOME)/tools/osm-extract/polygons/polyconvert.pl $(POLYFILE) > temp.gpx ; \
+	perl $(HOME)/tools/gpx2png/gpx2png.pl temp.gpx ;\
+	popd; \
+
+	

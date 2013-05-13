@@ -1,0 +1,11 @@
+--- polyconvert.pl	2013-05-13 21:16:58.927079545 +0200
++++ polyconvert2.pl	2013-05-13 21:18:01.042255432 +0200
+@@ -13,7 +13,7 @@
+ my $iscgi = defined($ENV{'REQUEST_METHOD'});
+ my $cgi = CGI->new if $iscgi;
+ 
+-my $to = $iscgi ? $cgi->param('format') || 'osm' : 'osm';
++my $to = 'gpx';
+ 
+ my $contents;
+ my $tmpseparator = $/;
