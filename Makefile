@@ -18,8 +18,8 @@ FAMILY_ID=42
 # polygons
 #POLYFILE=$(HOME)/poly/germany_czech-republic_austria_switzerland_italy_liechtenstein.poly
 #POLYFILE=$(HOME)/poly/germany_france_portugal_spain_andorra_belgium_luxembourg_monaco_netherlands.poly
-POLYFILE=$(HOME)/poly/illinois_wisconsin_michigan_new-york_ontario_indiana_new-jersey_ohio_pennsylvania.poly
-
+#POLYFILE=$(HOME)/poly/illinois_wisconsin_michigan_new-york_ontario_indiana_new-jersey_ohio_pennsylvania.poly
+POLYFILE=$(HOME)/poly/arizona_utah_nevada_california.poly
 
 INPUT_TEST=/home/nico/Development/osm/osm_pbf/bayern-latest.osm.pbf
 INPUT_EUROPE=/home/nico/Development/osm/nif_osm_maps/dach++.osm.pbf
@@ -94,8 +94,11 @@ mkgmap:
 
 png:
 	pushd tmp ; \
+	mkdir -p png ;\
+	pushd png ;\
 	perl $(HOME)/tools/osm-extract/polygons/polyconvert.pl $(POLYFILE) > temp.gpx ; \
 	perl $(HOME)/tools/gpx2png/gpx2png.pl temp.gpx ;\
+	popd; \
 	popd; \
 
 	
