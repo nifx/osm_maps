@@ -1,19 +1,32 @@
 #!/bin/bash
 
 
+
+usage() {
+echo ""
+echo -ne "usage:"
+echo -e "\tcut polygon out of map and generate garmin image + png file:"
+echo -e "\t$0 -c my.poly -o europe.osm.pbf"
+echo ""
+echo -e "\tgenerate garmin image out of complete map"
+echo -e "\t$0 -o europe.osm.pbf"
+echo ""
+echo -e "\tgenerate png file from polygon only (fast)"
+echo -e "\t$0 -c my.poly"
+}
+
+
+if [ $# -ne 1 ]
+then
+usage
+exit 1
+fi
+
+
 ##############################################################################
 # save working directory, needed to find other stuff
 ##############################################################################
 HOME=$PWD
-
-
-##############################################################################
-# polygon files
-##############################################################################
-POLYFILE=$HOME/poly/germany_czech-republic_austria_switzerland_italy_liechtenstein.poly
-#POLYFILE=$HOME/poly/germany_france_portugal_spain_andorra_belgium_luxembourg_monaco_netherlands.poly
-#POLYFILE=$HOME/poly/illinois_wisconsin_michigan_new-york_ontario_indiana_new-jersey_ohio_pennsylvania.poly
-#POLYFILE=$HOME/poly/arizona_utah_nevada_california.poly
 
 
 ##############################################################################
@@ -35,58 +48,37 @@ FAMILY_ID=42
 
 
 ##############################################################################
-# set variables to select build step default to false (=0)
+# set variables to select build step; 0=false
+# these variables are set using options during script call
 ##############################################################################
-DO_PNG=0
 DO_BOUNDS=0
-DO_MKGMAP=0
-DO_SPLIT=0
 DO_CUT=0
-
-
-##############################################################################
-# stuff to organize in a different way
-# this section will be removed later
-##############################################################################
-INPUT_TEST=/home/nico/Development/osm/osm_pbf/bayern-latest.osm.pbf
-INPUT_EUROPE=/home/nico/Development/osm/nif_osm_maps/dach++.osm.pbf
-INPUT=$INPUT_EUROPE
-INPUT_SPLITTER=/home/nico/Development/osm/osm_pbf/06052013/europe-latest.osm.pbf
+DO_SPLIT=0
+DO_MKGMAP=0
+DO_PNG=0
 
 
 ##############################################################################
 # getopts
 # -p png
-# -b bounds
-# -m mkgmap
-# -s split
-# -c cut polygon out of map
-# -a all
+# -c cut polygon out of map (implicit -p)
+# -o osm.pbf file
 ##############################################################################
-while getopts "apbr:sm" OPTION
+while getopts "c:o:" OPTION
 do
   case $OPTION in
-    p)  echo "P"
+    c)  # cut region using poly file
+	POLYFILE=$HOME/$OPTARG
+	echo "using $POLYFILE"
+	DO_CUT=1
 	DO_PNG=1
 	;;
-    b)  echo "B"
+    o)  # osm.pbf file
 	DO_BOUNDS=1
-	;;
-    m)  echo "M"
-	DO_MKGMAP=1
-	;;
-    s)  echo "S"
 	DO_SPLIT=1
-	;;
-    c)  echo "C: $OPTARG"
-	DO_CUT=1
-	;;
-    a)	echo "A"
-	DO_PNG=1
-	DO_BOUNDS=1
 	DO_MKGMAP=1
-	DO_SPLIT=1
-	DO_CUT=1
+	OSM_PBF=$HOME/$OPTARG
+	echo "using $OSM_PBF"
 	;;
  
     # Unknown option. No need for an error, getopts informs
@@ -96,6 +88,29 @@ do
 done
 
 
+##############################################################################
+# if no poly file selected, the input for splitter is the complete map
+# otherwise, splitter uses the reduced map as input
+##############################################################################
+if [ $DO_CUT = 1 ]; then
+INPUT_SPLITTER=reduced_map/reduced.osm.pbf
+else
+INPUT_SPLITTER=$OSM_PBF
+fi
+
+
+##############################################################################
+# if no osm.pbf file is given, but poly file and png,
+# generate png out of poly (is fast) and omit cutting
+##############################################################################
+if [ $DO_MKGMAP = 0 ]; then
+DO_CUT=0
+fi
+
+
+##############################################################################
+# generate tmp directory for processing stuff
+##############################################################################
 mkdir -p tmp
 pushd tmp
 
@@ -108,7 +123,7 @@ if [ $DO_BOUNDS = 1 ]; then
 echo "Pre-process boundaries"
 mkdir -p bounds
 pushd bounds
-$OSMCONVERT $INPUT_SPLITTER --out-o5m >temp.o5m
+$OSMCONVERT $OSM_PBF --out-o5m >temp.o5m
 
 $OSMFILTER temp.o5m --keep-nodes= \
 --keep-ways-relations="boundary=administrative =postal_code postal_code=" \
@@ -130,7 +145,7 @@ echo "Cutting polygon out of map"
 mkdir -p reduced_map
 pushd reduced_map
 #$OSMOSIS --read-pbf $INPUT_EUROPE --bb left=0.5 right=19.3 bottom=35.9 top=58.2 --write-pbf dach++.osm.pbf omitmetadata=true
-$OSMOSIS --read-pbf $INPUT_SPLITTER --bounding-polygon file=$POLYFILE --write-pbf reduced.osm.pbf omitmetadata=true
+$OSMOSIS --read-pbf $OSM_PBF --bounding-polygon file=$POLYFILE --write-pbf reduced.osm.pbf omitmetadata=true
 popd
 fi
 
@@ -139,7 +154,7 @@ fi
 # split tiles so that mkgmap can process it
 ##############################################################################
 if [ $DO_SPLIT = 1 ]; then
-java -Xmx1500m -jar $SPLITTER --cache=./tmp --output=xml --max-nodes=800000 reduced_map/reduced.osm.pbf
+java -Xmx1500m -jar $SPLITTER --cache=./tmp --output=xml --max-nodes=800000 $INPUT_SPLITTER
 fi
 
 
