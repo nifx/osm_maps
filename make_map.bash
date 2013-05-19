@@ -1,7 +1,6 @@
 #!/bin/bash
 
 
-
 usage() {
 echo ""
 echo -ne "usage:"
@@ -14,13 +13,6 @@ echo ""
 echo -e "\tgenerate png file from polygon only (fast)"
 echo -e "\t$0 -c my.poly"
 }
-
-
-if [ $# -ne 1 ]
-then
-usage
-exit 1
-fi
 
 
 ##############################################################################
@@ -37,6 +29,12 @@ MKGMAP=$HOME/tools/mkgmap/mkgmap.jar
 OSMOSIS=$HOME/tools/osmosis/bin/osmosis
 OSMFILTER=$HOME/tools/osmfilter/osmfilter32
 OSMCONVERT=$HOME/tools/osmconvert/osmconvert32
+
+
+##############################################################################
+# set maximum Java heap size (for mkgmap)
+##############################################################################
+MEM_USAGE=-Xmx4000m
 
 
 ##############################################################################
@@ -87,6 +85,12 @@ do
   esac
 done
 
+if [ $# -ne 2 ] && [ $# -ne 4 ]
+then
+usage
+exit 1
+fi
+
 
 ##############################################################################
 # if no poly file selected, the input for splitter is the complete map
@@ -129,7 +133,7 @@ $OSMFILTER temp.o5m --keep-nodes= \
 --keep-ways-relations="boundary=administrative =postal_code postal_code=" \
 --out-o5m > temp-boundaries.o5m
 
-java -cp $MKGMAP \
+java $MEM_USAGE -cp $MKGMAP \
 uk.me.parabola.mkgmap.reader.osm.boundary.BoundaryPreprocessor \
 temp-boundaries.o5m \
 temp_bounds
@@ -154,7 +158,7 @@ fi
 # split tiles so that mkgmap can process it
 ##############################################################################
 if [ $DO_SPLIT = 1 ]; then
-java -Xmx1500m -jar $SPLITTER --cache=./tmp --output=xml --max-nodes=800000 $INPUT_SPLITTER
+java $MEM_USAGE -jar $SPLITTER --cache=./tmp --output=xml --max-nodes=800000 $INPUT_SPLITTER
 fi
 
 
@@ -170,7 +174,7 @@ fi
 #/home/nico/Development/osm/own_stuff/boundary/local/
 #/home/nico/Development/osm/bounds_20130420
 if [ $DO_MKGMAP = 1 ]; then
-java -Xmx1500m -jar $MKGMAP \
+java $MEM_USAGE -jar $MKGMAP \
 --keep-going \
 --family-id=$FAMILY_ID \
 --style-file=$STYLE_FILE \
