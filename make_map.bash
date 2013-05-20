@@ -211,6 +211,7 @@ mkdir -p png
 pushd png
 perl $HOME/tools/osm-extract/polygons/polyconvert.pl $POLYFILE > temp.gpx
 perl $HOME/tools/gpx2png/gpx2png.pl temp.gpx
+popd
 fi
 
 
