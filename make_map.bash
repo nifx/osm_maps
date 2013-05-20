@@ -40,7 +40,7 @@ MEM_USAGE=-Xmx4000m
 ##############################################################################
 # define style and typ file locations
 ##############################################################################
-STYLE_FILE=$HOME/tools/teddy/teddy
+#STYLE_FILE=$HOME/tools/teddy/teddy
 TYP_FILE=$HOME/tools/teddy/teddy.TYP
 FAMILY_ID=42
 
@@ -97,7 +97,7 @@ fi
 # otherwise, splitter uses the reduced map as input
 ##############################################################################
 if [ $DO_CUT = 1 ]; then
-INPUT_SPLITTER=reduced_map/reduced.osm.pbf
+INPUT_SPLITTER=$HOME/tmp/reduced_map/reduced.osm.pbf
 else
 INPUT_SPLITTER=$OSM_PBF
 fi
@@ -148,7 +148,6 @@ if [ $DO_CUT = 1 ]; then
 echo "Cutting polygon out of map"
 mkdir -p reduced_map
 pushd reduced_map
-#$OSMOSIS --read-pbf $INPUT_EUROPE --bb left=0.5 right=19.3 bottom=35.9 top=58.2 --write-pbf dach++.osm.pbf omitmetadata=true
 $OSMOSIS --read-pbf $OSM_PBF --bounding-polygon file=$POLYFILE --write-pbf reduced.osm.pbf omitmetadata=true
 popd
 fi
@@ -158,7 +157,11 @@ fi
 # split tiles so that mkgmap can process it
 ##############################################################################
 if [ $DO_SPLIT = 1 ]; then
+echo "Start splitter"
+mkdir -p splitter
+pushd splitter
 java $MEM_USAGE -jar $SPLITTER --cache=./tmp --output=xml --max-nodes=800000 $INPUT_SPLITTER
+popd
 fi
 
 
@@ -173,11 +176,11 @@ fi
 # --location-autofill=bounds (add this, no change??)
 #/home/nico/Development/osm/own_stuff/boundary/local/
 #/home/nico/Development/osm/bounds_20130420
+#--style-file=$STYLE_FILE \
 if [ $DO_MKGMAP = 1 ]; then
 java $MEM_USAGE -jar $MKGMAP \
 --keep-going \
 --family-id=$FAMILY_ID \
---style-file=$STYLE_FILE \
 --reduce-point-density=4 \
 --merge-lines \
 --generate-sea=multipolygon,extend-sea-sectors,close-gaps=6000,floodblocker \
@@ -190,12 +193,13 @@ java $MEM_USAGE -jar $MKGMAP \
 --description="OSM Map from NiF - "`date +%F` \
 --area-name=DACH \
 --gmapsupp \
+--tdbfile \
 --latin1 \
 --net \
 --route \
 --index \
 --name-tag-list='name:de,name,name:latin,name:en' \
-*.osm.gz $TYP_FILE
+splitter/*.osm.gz $TYP_FILE
 fi
 
 
@@ -210,4 +214,47 @@ perl $HOME/tools/gpx2png/gpx2png.pl temp.gpx
 fi
 
 
+##############################################################################
+# leaving tmp directory
+##############################################################################
 popd
+
+
+##############################################################################
+# copy output
+# therefore, generate subfolder in output with current date+time
+# a text file will be added (00_info.txt) to provide information about
+# how this script was called
+##############################################################################
+mkdir -p output
+pushd output
+OUTPUT_DIR=$(date +%Y%m%d_%H%M%S)
+mkdir $OUTPUT_DIR
+pushd $OUTPUT_DIR
+
+echo "These output files were generated with the following parameters:" > 00_info.txt
+echo "" >> 00_info.txt
+
+if [ $DO_PNG = 1 ]; then
+mv $HOME/tmp/png/map.png .
+echo "polyfile: "$POLYFILE >> 00_info.txt
+fi
+
+if [ $DO_MKGMAP = 1 ]; then
+mv $HOME/tmp/gmapsupp.img .
+
+mkdir tdb
+pushd tdb
+find $HOME/tmp/ -maxdepth 1 -type f -exec mv {} . \;
+popd
+
+echo "osm_pbf: "$OSM_PBF >> 00_info.txt
+fi
+
+popd
+
+
+##############################################################################
+# finished :-)
+##############################################################################
+echo "finished"
