@@ -52,7 +52,7 @@ popd
 ##############################################################################
 # mkgmap
 ##############################################################################
-FILENAME="mkgmap-r2596"
+FILENAME="mkgmap-r2606"
 mkdir -p mkgmap
 pushd mkgmap
 rm -rf *
@@ -81,7 +81,7 @@ popd
 ##############################################################################
 mkdir -p teddy
 pushd teddy
-wget http://ftp5.gwdg.de/pub/misc/openstreetmap/teddynetz.de/latest/new/teddy.tgz
+#wget http://ftp5.gwdg.de/pub/misc/openstreetmap/teddynetz.de/latest/new/teddy.tgz
 wget http://ftp5.gwdg.de/pub/misc/openstreetmap/teddynetz.de/latest/new/teddy.typ
 mv teddy.typ teddy.TYP
 tar xvfz teddy.tgz
