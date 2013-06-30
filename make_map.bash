@@ -3,6 +3,10 @@
 
 usage() {
 echo ""
+echo -e "-o \tSet .osm.pbf file"
+echo -e "-c \tSet polyfile used to select region used instead of complete"
+echo -e "-b \tLocation of pre-preocessed boundaries. Thus, boundary processing is omitted"
+echo ""
 echo -ne "usage:"
 echo -e "\tcut polygon out of map and generate garmin image + png file:"
 echo -e "\t$0 -c my.poly -o europe.osm.pbf"
@@ -12,6 +16,7 @@ echo -e "\t$0 -o europe.osm.pbf"
 echo ""
 echo -e "\tgenerate png file from polygon only (fast)"
 echo -e "\t$0 -c my.poly"
+echo ""
 }
 
 
@@ -62,7 +67,7 @@ DO_PNG=0
 # -c cut polygon out of map (implicit -p)
 # -o osm.pbf file
 ##############################################################################
-while getopts "c:o:" OPTION
+while getopts "c:o:b:" OPTION
 do
   case $OPTION in
     c)  # cut region using poly file
@@ -78,6 +83,11 @@ do
 	OSM_PBF=$HOME/$OPTARG
 	echo "using $OSM_PBF"
 	;;
+    b)	# use pre-processed bounds
+	DO_BOUNDS=0
+	PREBOUNDS=$HOME/$OPTARG
+	echo "using $PREBOUNDS"
+	;;
  
     # Unknown option. No need for an error, getopts informs
     # the user itself.
@@ -85,7 +95,7 @@ do
   esac
 done
 
-if [ $# -ne 2 ] && [ $# -ne 4 ]
+if [ $# -ne 2 ] && [ $# -ne 4 ] && [ $# -ne 6 ]
 then
 usage
 exit 1
@@ -114,9 +124,14 @@ fi
 
 ##############################################################################
 # generate tmp directory for processing stuff
+# delete old contents
 ##############################################################################
 mkdir -p tmp
 pushd tmp
+rm -rf bounds
+rm -rf png
+rm -rf reduced_map
+rm -rf splitter
 
 
 ##############################################################################
@@ -125,6 +140,7 @@ pushd tmp
 ##############################################################################
 if [ $DO_BOUNDS = 1 ]; then
 echo "Pre-process boundaries"
+PREBOUNDS=$HOME/tmp/bounds/temp_bounds
 mkdir -p bounds
 pushd bounds
 $OSMCONVERT $OSM_PBF --out-o5m >temp.o5m
@@ -184,7 +200,8 @@ java $MEM_USAGE -jar $MKGMAP \
 --reduce-point-density=4 \
 --merge-lines \
 --generate-sea=multipolygon,extend-sea-sectors,close-gaps=6000,floodblocker \
---bounds=$HOME/tmp/bounds/temp_bounds \
+--bounds=$PREBOUNDS \
+--location-autofill=bounds,is_in,nearest \
 --add-pois-to-areas \
 --remove-short-arcs \
 --country-name=GERMANY \
@@ -196,6 +213,7 @@ java $MEM_USAGE -jar $MKGMAP \
 --tdbfile \
 --latin1 \
 --net \
+--style=default \
 --route \
 --index \
 --name-tag-list='name:de,name,name:latin,name:en' \
@@ -243,6 +261,10 @@ fi
 
 if [ $DO_MKGMAP = 1 ]; then
 mv $HOME/tmp/gmapsupp.img .
+
+if [ $DO_BOUNDS = 0 ]; then
+echo "pre-processed boundaries: "$PREBOUNDS >> 00_info.txt
+fi
 
 mkdir tdb
 pushd tdb
