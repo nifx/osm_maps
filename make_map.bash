@@ -54,6 +54,7 @@ FAMILY_ID=42
 # set variables to select build step; 0=false
 # these variables are set using options during script call
 ##############################################################################
+USE_BOUNDS=0 # needed to be independent of parameter order
 DO_BOUNDS=0
 DO_CUT=0
 DO_SPLIT=0
@@ -84,7 +85,8 @@ do
 	echo "using $OSM_PBF"
 	;;
     b)	# use pre-processed bounds
-	DO_BOUNDS=0
+	USE_BOUNDS=1
+	#DO_BOUNDS=0
 	PREBOUNDS=$HOME/$OPTARG
 	echo "using $PREBOUNDS"
 	;;
@@ -94,6 +96,11 @@ do
     \?) exit 1;;
   esac
 done
+
+if [ $USE_BOUNDS = 1 ]; then
+DO_BOUNDS=0
+fi
+
 
 if [ $# -ne 2 ] && [ $# -ne 4 ] && [ $# -ne 6 ]
 then
