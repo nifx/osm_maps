@@ -208,6 +208,7 @@ java $MEM_USAGE -jar $MKGMAP \
 --merge-lines \
 --generate-sea=multipolygon,extend-sea-sectors,close-gaps=6000,floodblocker \
 --bounds=$PREBOUNDS \
+--housenumbers \
 --location-autofill=bounds,is_in,nearest \
 --add-pois-to-areas \
 --remove-short-arcs \
