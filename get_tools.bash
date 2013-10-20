@@ -84,8 +84,8 @@ pushd teddy
 #wget http://ftp5.gwdg.de/pub/misc/openstreetmap/teddynetz.de/latest/new/teddy.tgz
 wget http://ftp5.gwdg.de/pub/misc/openstreetmap/teddynetz.de/latest/new/teddy.typ
 mv teddy.typ teddy.TYP
-tar xvfz teddy.tgz
-rm teddy.tgz
+#tar xvfz teddy.tgz
+#rm teddy.tgz
 popd
 
 ##############################################################################
