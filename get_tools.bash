@@ -38,13 +38,17 @@ popd
 ##############################################################################
 # splitter
 ##############################################################################
-FILENAME="splitter-r311"
+FILENAME="splitter-latest"
 mkdir -p splitter
 pushd splitter
 rm -rf *
 wget http://www.mkgmap.org.uk/download/$FILENAME.tar.gz
 tar xvfz $FILENAME.tar.gz
 rm $FILENAME.tar.gz
+# dir name is not latest; it's the version number
+# thus, get dir name to delete
+FILENAME=$(ls -p | grep "/")
+echo $FILENAME > 00_info.txt
 mv $FILENAME/* .
 rm -rf $FILENAME
 popd
@@ -52,14 +56,18 @@ popd
 ##############################################################################
 # mkgmap
 ##############################################################################
-FILENAME="mkgmap-r2760"
+FILENAME="mkgmap-latest"
 mkdir -p mkgmap
 pushd mkgmap
 rm -rf *
 wget http://www.mkgmap.org.uk/download/$FILENAME.tar.gz
 tar xvfz $FILENAME.tar.gz
 rm $FILENAME.tar.gz
-mv $FILENAME/* .
+# dir name is not latest; it's the version number
+# thus, get dir name to delete
+FILENAME=$(ls -p | grep "/")
+echo $FILENAME > 00_info.txt
+mv $FILENAME* .
 rm -rf $FILENAME
 popd
 
